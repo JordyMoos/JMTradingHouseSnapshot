@@ -48,6 +48,12 @@ snapshot =
             id = '',
             name = '',
             alianceId = '',
+        },
+
+        -- Next guild etc
+        2 =
+        {
+            -- ..
         }
     },
 
@@ -89,7 +95,7 @@ Will abort the snapshot if running.
 JMTradingHouseSnapshot.registerForEvent(event, callback)
 ```
 
-Allows you to listen to an event. See Events for list of possible event.
+Allows you to listen to an event. See Events for list of possible events.
 The callback function will be called when the events triggers.
 
 ### unregisterForEvent
@@ -98,11 +104,11 @@ The callback function will be called when the events triggers.
 JMTradingHouseSnapshot.unregisterForEvent(event, callback)
 ```
 
-Stop listening to an event
+Stop listening to an event.
 
 ## Events
 
-All possible events are listen in `JMTradingHouseSnapshot.events`
+All possible events are listen in `JMTradingHouseSnapshot.events`.
 
 ### SCAN_STARTED
 
@@ -110,7 +116,7 @@ All possible events are listen in `JMTradingHouseSnapshot.events`
 JMTradingHouseSnapshot.events.SCAN_STARTED
 ```
 
-Will be triggered when the scanner is starting to create a snapshot
+Will be triggered when the scanner is starting to create a snapshot.
 
 ```lua
 JMTradingHouseSnapshot.registerForEvent(JMTradingHouseSnapshot.events.SCAN_STARTED, function ()
@@ -140,7 +146,7 @@ end)
 JMTradingHouseSnapshot.events.SCAN_FAILED
 ```
 
-Will be triggered when the scanner got aborted
+Will be triggered when the scanner got aborted.
 
 ```lua
 JMTradingHouseSnapshot.registerForEvent(JMTradingHouseSnapshot.events.SCAN_FAILED, function ()
@@ -154,7 +160,7 @@ end)
 JMTradingHouseSnapshot.events.SCAN_ALREADY_RUNNING
 ```
 
-Will be triggered when the scanner is already making a snapshot
+Will be triggered when the scanner is already making a snapshot.
 
 ```lua
 JMTradingHouseSnapshot.registerForEvent(JMTradingHouseSnapshot.events.SCAN_ALREADY_RUNNING, function ()
