@@ -25,6 +25,7 @@ snapshot =
                 pricePerPiece = '',
                 expiry = '',
             },
+
             -- Next item etc
             {
                 -- ..
@@ -32,7 +33,8 @@ snapshot =
         },
 
         -- Next guild etc
-        2 = {
+        2 =
+        {
             -- ..
         }
     },
@@ -116,7 +118,7 @@ JMTradingHouseSnapshot.registerForEvent(JMTradingHouseSnapshot.events.SCAN_START
 end)
 ```
 
-### SCAN_SUCCEEDED
+#### SCAN_SUCCEEDED
 
 ```lua
 JMTradingHouseSnapshot.events.SCAN_SUCCEEDED
@@ -132,7 +134,7 @@ JMTradingHouseSnapshot.registerForEvent(JMTradingHouseSnapshot.events.SCAN_SUCCE
 end)
 ```
 
-### SCAN_FAILED
+#### SCAN_FAILED
 
 ```lua
 JMTradingHouseSnapshot.events.SCAN_FAILED
@@ -146,7 +148,7 @@ JMTradingHouseSnapshot.registerForEvent(JMTradingHouseSnapshot.events.SCAN_FAILE
 end)
 ```
 
-### SCAN_ALREADY_RUNNING
+#### SCAN_ALREADY_RUNNING
 
 ```lua
 JMTradingHouseSnapshot.events.SCAN_ALREADY_RUNNING
@@ -160,7 +162,7 @@ JMTradingHouseSnapshot.registerForEvent(JMTradingHouseSnapshot.events.SCAN_ALREA
 end)
 ```
 
-### ADDON_LOADED
+#### ADDON_LOADED
 
 ```lua
 JMTradingHouseSnapshot.events.ADDON_LOADED
