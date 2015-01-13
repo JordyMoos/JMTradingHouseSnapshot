@@ -1,7 +1,7 @@
 ## JMTradingHouseSnapshot
 
 Addon for elder scroll online that makes a snapshot of your trading houses.
-Other addons can request a new addon or register on events so they are notices when a new snapshot is created.
+Other addons can request a new snapshot or register on events so they are notices when a new snapshot is created.
 
 ## Snapshot structure
 
