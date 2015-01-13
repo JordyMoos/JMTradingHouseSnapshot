@@ -1,0 +1,77 @@
+<GuiXml>
+    <Controls>
+
+        <!--
+            Main window
+        -->
+        <TopLevelControl name="JMTradingHouseSnapshotGuiMainWindow" mouseEnabled="true" movable="true" hidden="true">
+            <Dimensions x="700" y="100" />
+            <Anchor point="RIGHT" relativePoint="TOP" offsetY="100" />
+
+            <Controls>
+                <Backdrop name="$(parent)Background" inherits="ZO_ThinBackdrop" />
+
+                <!-- Scan button -->
+                <Button name="$(parent)ScanButton" inherits="ZO_DefaultButton" text="Scan">
+                    <Dimensions x="120" y="30" />
+                    <Anchor point="BOTTOMLEFT" offsetX="5" offsetY="-55" />
+                    <OnClicked>
+                        JMTradingHouseSnapshot.createSnapshot()
+                    </OnClicked>
+                </Button>
+
+                <!-- Abort button -->
+                <Button name="$(parent)AbortButton" inherits="ZO_DefaultButton" text="Abort">
+                    <Dimensions x="120" y="30" />
+                    <Anchor point="BOTTOMLEFT" offsetX="135" offsetY="-55" />
+                    <OnClicked>
+                        JMTradingHouseSnapshot.abort()
+                    </OnClicked>
+                </Button>
+
+                <!-- Close button -->
+                <Button name="$(parent)CloseButton" inherits="ZO_DefaultButton" text="Close">
+                    <Dimensions x="120" y="30" />
+                    <Anchor point="BOTTOMRIGHT" offsetX="-5" offsetY="-55" />
+                    <OnClicked>
+                        JMTradingHouseSnapshotGuiMainWindow:close()
+                    </OnClicked>
+                </Button>
+
+                <!--
+                    Status bar
+                -->
+                <!-- Background -->
+                <Backdrop name="$(parent)StatusBackground" inherits="ZO_ThinBackdrop">
+                    <Dimensions x="690" y="38" />
+                    <Anchor point="BOTTOMLEFT" offsetX="5" offsetY="-5" />
+                </Backdrop>
+
+                <!-- Left information -->
+                <Label name="$(parent)StatusAction" font="ZoFontGame" color="cfdcbd" verticalAlignment="CENTER"
+                       horizontalAlignment="LEFT" wrapMode="ELLIPSIS" text="">
+                    <Dimensions x="400" y="28" />
+                    <Anchor point="BOTTOMLEFT" offsetX="10" offsetY="-10" />
+                </Label>
+
+                <!-- Right information -->
+                <Label name="$(parent)StatusDetails" font="ZoFontGame" color="cfdcbd" verticalAlignment="CENTER"
+                       horizontalAlignment="RIGHT" wrapMode="ELLIPSIS" text="">
+                    <Dimensions x="400" y="28" />
+                    <Anchor point="BOTTOMRIGHT" offsetX="-10" offsetY="-10" />
+                </Label>
+            </Controls>
+        </TopLevelControl>
+
+        <!--
+            Toggle button that shows the main window.
+            Placed on the official trading house window
+        -->
+        <Button name="JMTradingHouseSnapshotGuiOpenButton" inherits="ZO_DefaultButton" text="JMSnapshot">
+            <Anchor point="BOTTOM" relativeTo="ZO_TradingHouseLeftPaneBrowseItemsCommonQuality" relativePoint="BOTTOM" offsetY="50" />
+            <OnClicked>
+                JMTradingHouseSnapshotGuiMainWindow:ToggleHidden()
+            </OnClicked>
+        </Button>
+    </Controls>
+</GuiXml>

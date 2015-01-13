@@ -1,0 +1,7 @@
+## Title: JMTradingHouseSnapshot
+## APIVersion: 100010
+## DependsOn: JMUtil
+## SavedVariables: JMTradingHouseSnapshotSavedVariables
+
+JMTradingHouseSnapshot.xml
+JMTradingHouseSnapshot.lua
