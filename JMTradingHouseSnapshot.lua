@@ -226,15 +226,7 @@ end
 -- if something is wrong
 --
 function Scanner:canContinueScanning ()
-    if not TraidingHouse.isOpen then
-        return false
-    end
-
-    if not Scanner.isScanning then
-        return false
-    end
-
-    return true
+    return TraidingHouse.isOpen and Scanner.isScanning
 end
 
 ---
