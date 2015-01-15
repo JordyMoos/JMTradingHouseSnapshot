@@ -17,6 +17,7 @@ snapshot =
             -- First item
             {
                 itemId = '',
+                guildId = '',
                 itemLink = '',
                 sellerName = '',
                 quality = '',
