@@ -88,6 +88,31 @@ local Gui = {
 
 --[[
 
+    Utility functions
+
+ ]]
+
+local Util = {}
+
+---
+-- @param obj
+-- @param seen
+--
+function Util.copyTable(obj, seen)
+    -- Handle non-tables and previously-seen tables.
+    if type(obj) ~= 'table' then return obj end
+    if seen and seen[obj] then return seen[obj] end
+
+    -- New table; mark it as seen an copy recursively.
+    local s = seen or {}
+    local res = setmetatable({}, getmetatable(obj))
+    s[obj] = res
+    for k, v in pairs(obj) do res[Util.copyTable(k, s)] = Util.copyTable(v, s) end
+    return res
+end
+
+--[[
+
     Trading house
 
  ]]
@@ -287,7 +312,7 @@ function Scanner:finishedGuild(guildId)
     snapshotData.creationTimestamp = GetTimeStamp()
 
     -- Store the snapshot
-    savedVariables.snapshot = JMUtil.copyTable(snapshotData)
+    savedVariables.snapshot = Util.copyTable(snapshotData)
 
     -- Say we are done
     Scanner.isScanning = false
@@ -301,7 +326,7 @@ function Scanner:finishedGuild(guildId)
     -- Make a copy of the savedVariables to distribute
     -- So the listening addons can not change our savedVariables
     Gui.leftLabel:SetText('Informing other addons')
-    local data = JMUtil.copyTable(savedVariables.snapshot)
+    local data = Util.copyTable(savedVariables.snapshot)
     EventManager:FireCallbacks(Events.SCAN_SUCCEEDED, data)
     Gui.leftLabel:SetText('')
 end
@@ -437,7 +462,7 @@ JMTradingHouseSnapshot = {
         end
 
         -- Copy the savedVariables so he cannot change our data
-        return JMUtil.copyTable(savedVariables.snapshot)
+        return Util.copyTable(savedVariables.snapshot)
     end,
 
     ---
