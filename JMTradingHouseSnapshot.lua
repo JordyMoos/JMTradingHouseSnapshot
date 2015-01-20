@@ -1,4 +1,9 @@
 
+---
+--- JMTradingHouseSnapshot version 0.0.2
+--- https://github.com/JordyMoos/JMTradingHouseSnapshot
+---
+
 --[[
 
     Variable declaration
