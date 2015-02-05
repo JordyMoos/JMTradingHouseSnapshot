@@ -1,6 +1,6 @@
 
 ---
---- JMTradingHouseSnapshot version 0.0.2
+--- JMTradingHouseSnapshot version 1.0
 --- https://github.com/JordyMoos/JMTradingHouseSnapshot
 ---
 
