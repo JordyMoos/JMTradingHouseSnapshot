@@ -1,6 +1,6 @@
 
 ---
---- JMTradingHouseSnapshot version 1.0
+--- JMTradingHouseSnapshot version 0.0.2
 --- https://github.com/JordyMoos/JMTradingHouseSnapshot
 ---
 
@@ -46,7 +46,7 @@ local Events = {
 --
 -- @field isOpen
 --
-local TraidingHouse = {
+local TradingHouse = {
     isOpen = false,
 }
 
@@ -124,13 +124,13 @@ end
 
 ---
 --
-function TraidingHouse:opened()
+function TradingHouse:opened()
     self.isOpen = true
 end
 
 ---
 --
-function TraidingHouse:closed()
+function TradingHouse:closed()
     self.isOpen = false
     Scanner:abort()
     Gui.mainWindow:SetHidden(true)
@@ -256,7 +256,7 @@ end
 -- if something is wrong
 --
 function Scanner:canContinueScanning ()
-    return TraidingHouse.isOpen and Scanner.isScanning
+    return TradingHouse.isOpen and Scanner.isScanning
 end
 
 ---
@@ -385,7 +385,7 @@ local function Initialize()
         Config.name,
         EVENT_OPEN_TRADING_HOUSE,
         function ()
-            TraidingHouse:opened()
+            TradingHouse:opened()
         end
     )
 
@@ -394,7 +394,7 @@ local function Initialize()
         Config.name,
         EVENT_CLOSE_TRADING_HOUSE,
         function ()
-            TraidingHouse:closed()
+            TradingHouse:closed()
         end
     )
 
