@@ -208,8 +208,10 @@ end
 ---
 -- @param guildId
 --
-function Scanner:scanGuild(guildId)
-    Gui.leftLabel:SetText('Starting with guild: ' .. guildId)
+function Scanner:scanGuild(guildIndex)
+    Gui.leftLabel:SetText('Starting with guild index: ' .. guildIndex)
+
+    local guildId, guildName, alianceId = GetTradingHouseGuildDetails(guildIndex)
 
     -- Create table for this guild
     snapshotData.tradingHouseItemList[guildId] = {}
@@ -223,9 +225,9 @@ function Scanner:scanGuild(guildId)
         SelectTradingHouseGuildId(guildId)
 
         -- Store the guilds information
-        local _, guildName, alianceId = GetTradingHouseGuildDetails(guildId)
         snapshotData.guildList[guildId] = {
             id = guildId,
+            index = guildIndex,
             name = guildName,
             alianceId = alianceId,
         }
@@ -308,9 +310,11 @@ end
 function Scanner:finishedGuild(guildId)
     Gui.leftLabel:SetText('Finishing..')
 
+    local guildIndex = snapshotData.guildList[guildId].index
+
     -- Do next guild if we have more guilds
-    if guildId < GetNumTradingHouseGuilds() then
-        return self:scanGuild(guildId + 1)
+    if guildIndex < GetNumTradingHouseGuilds() then
+        return self:scanGuild(guildIndex + 1)
     end
 
     -- Add creation timestamp to the snapshot
