@@ -1,6 +1,9 @@
 ## Title: JMTradingHouseSnapshot
 ## APIVersion: 100010
 ## SavedVariables: JMTradingHouseSnapshotSavedVariables
+## Version: 1.2
+## Author: Jordy Moos
+## Description: Added that creates a snapshot and api for the guilds trading house
 
 JMTradingHouseSnapshot.xml
 JMTradingHouseSnapshot.lua
