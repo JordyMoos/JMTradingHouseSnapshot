@@ -15,6 +15,9 @@
 -- @field savedVariablesName
 --
 local Config = {
+    version = '1.3',
+    author = 'Jordy Moos',
+
     name = 'JMTradingHouseSnapshot',
     savedVariablesName = 'JMTradingHouseSnapshotSavedVariables',
 }
