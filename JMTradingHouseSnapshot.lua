@@ -287,7 +287,9 @@ function Scanner:searchResultReceived(guildId, itemCount, pageNumber, hasMorePag
         table.insert(
             snapshotData.tradingHouseItemList[guildId],
             {
+                -- @depriced guildId. Use guildName
                 guildId = guildId,
+                guildName  = snapshotData.guildList[guildId].name,
                 itemId = itemId,
                 itemLink = itemLink,
                 sellerName = sellerName,
