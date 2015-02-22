@@ -17,7 +17,7 @@ snapshot =
             -- First item
             {
                 itemId = '',
-                guildId = '',
+                guildName = '',
                 itemLink = '',
                 sellerName = '',
                 quality = '',
@@ -25,6 +25,10 @@ snapshot =
                 price = '',
                 pricePerPiece = '',
                 expiry = '',
+
+                -- Deprecated. guildId will be removed in version 2.0
+                -- You should use the guildName
+                guildId = '',
             },
 
             -- Next item etc
