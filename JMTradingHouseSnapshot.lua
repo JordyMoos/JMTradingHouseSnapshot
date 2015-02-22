@@ -15,6 +15,9 @@
 -- @field savedVariablesName
 --
 local Config = {
+    version = '1.3',
+    author = 'Jordy Moos',
+
     name = 'JMTradingHouseSnapshot',
     savedVariablesName = 'JMTradingHouseSnapshotSavedVariables',
 }
@@ -284,7 +287,9 @@ function Scanner:searchResultReceived(guildId, itemCount, pageNumber, hasMorePag
         table.insert(
             snapshotData.tradingHouseItemList[guildId],
             {
+                -- @deprecated guildId. Use guildName
                 guildId = guildId,
+                guildName  = snapshotData.guildList[guildId].name,
                 itemId = itemId,
                 itemLink = itemLink,
                 sellerName = sellerName,
