@@ -1,5 +1,5 @@
 ## Title: JMTradingHouseSnapshot
-## APIVersion: 100010
+## APIVersion: 100011
 ## SavedVariables: JMTradingHouseSnapshotSavedVariables
 ## Version: 1.3
 ## Author: Jordy Moos
