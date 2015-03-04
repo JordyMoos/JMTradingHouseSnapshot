@@ -1,7 +1,6 @@
 
 ---
 --- JMTradingHouseSnapshot
---- https://github.com/JordyMoos/JMTradingHouseSnapshot
 ---
 
 --[[
@@ -65,15 +64,16 @@ local Scanner = {
 }
 
 ---
--- @field tradingHouseItemList
--- @field guildList
+-- @field tradingHouseList
 -- @field creationTimestamp
 --
 local snapshotData = {
-    tradingHouseItemList = {},
-    guildList = {},
-    creationTimestamp = nil,
+    tradingHouseList = {},
+    lastChangeTimestamp = nil,
 }
+local currentGuildSnapshot = {}
+
+local guildList = {}
 
 local savedVariables = {
 
@@ -193,11 +193,12 @@ end
 ---
 --
 function Scanner:prepareSnapshotData()
-    snapshotData = {
-        tradingHouseItemList = {},
-        guildList = {},
-        creationTimestamp = nil,
-    }
+    guildList = {}
+--    snapshotData = {
+--        tradingHouseList = {},
+--        guildList = {},
+--        creationTimestamp = nil,
+--    }
 end
 
 ---
@@ -217,7 +218,11 @@ function Scanner:scanGuild(guildIndex)
     local guildId, guildName, alianceId = GetTradingHouseGuildDetails(guildIndex)
 
     -- Create table for this guild
-    snapshotData.tradingHouseItemList[guildId] = {}
+    snapshotData.tradingHouseList[guildName] = {
+        scanTimestamp = nil,
+        itemList = {},
+    }
+    currentGuildSnapshot = snapshotData.tradingHouseList[guildName]
 
     -- Switching of guilds also refreshed the cooldown
     zo_callLater(function()
@@ -228,7 +233,7 @@ function Scanner:scanGuild(guildIndex)
         SelectTradingHouseGuildId(guildId)
 
         -- Store the guilds information
-        snapshotData.guildList[guildId] = {
+        guildList[guildId] = {
             id = guildId,
             index = guildIndex,
             name = guildName,
@@ -285,11 +290,9 @@ function Scanner:searchResultReceived(guildId, itemCount, pageNumber, hasMorePag
 
         -- Insert row in the guilds snapshot
         table.insert(
-            snapshotData.tradingHouseItemList[guildId],
+            currentGuildSnapshot.itemList,
             {
-                -- @deprecated guildId. Use guildName
-                guildId = guildId,
-                guildName  = snapshotData.guildList[guildId].name,
+                guildName  = guildList[guildId].name,
                 itemId = itemId,
                 itemLink = itemLink,
                 sellerName = sellerName,
@@ -315,7 +318,15 @@ end
 function Scanner:finishedGuild(guildId)
     Gui.leftLabel:SetText('Finishing..')
 
-    local guildIndex = snapshotData.guildList[guildId].index
+    local guildIndex = guildList[guildId].index
+    local guildName = guildList[guildId].name
+
+    currentGuildSnapshot.timestamp = GetTimeStamp()
+    currentGuildSnapshot.canBuy = CanBuyFromTradingHouse(guildId)
+    currentGuildSnapshot.canSell = CanSellOnTradingHouse(guildId)
+    currentGuildSnapshot.listingPercentage = GetTradingHouseListingPercentage(guildId)
+    currentGuildSnapshot.cutPercentage = GetTradingHouseCutPercentage(guildId)
+    savedVariables.snapshot.tradingHouseList[guildName] = Util.copyTable(currentGuildSnapshot)
 
     -- Do next guild if we have more guilds
     if guildIndex < GetNumTradingHouseGuilds() then
@@ -323,10 +334,7 @@ function Scanner:finishedGuild(guildId)
     end
 
     -- Add creation timestamp to the snapshot
-    snapshotData.creationTimestamp = GetTimeStamp()
-
-    -- Store the snapshot
-    savedVariables.snapshot = Util.copyTable(snapshotData)
+    savedVariables.snapshot.lastChangeTimestamp = GetTimeStamp()
 
     -- Say we are done
     Scanner.isScanning = false
@@ -471,7 +479,7 @@ JMTradingHouseSnapshot = {
         end
 
         -- We do not have a snapshot
-        if not savedVariables.snapshot.creationTimestamp then
+        if not savedVariables.snapshot.lastChangeTimestamp then
             return false
         end
 
