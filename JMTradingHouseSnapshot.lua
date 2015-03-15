@@ -384,7 +384,9 @@ local function Initialize()
 
     -- Load the saved variables
     savedVariables = ZO_SavedVars:NewAccountWide(Config.savedVariablesName, 1, nil, {
-        snapshot = {},
+        snapshot = {
+            tradingHouseList = {},
+        },
     })
 
     -- Store search request finished
@@ -485,6 +487,30 @@ JMTradingHouseSnapshot = {
 
         -- Copy the savedVariables so he cannot change our data
         return Util.copyTable(savedVariables.snapshot)
+    end,
+
+    ---
+    -- Return the latest snapshot
+    --
+    getByGuildAndItem = function(guildName, itemId)
+        if not addonLoaded then
+            return false
+        end
+
+        -- We do not have a snapshot
+        if not savedVariables.snapshot.tradingHouseList[guildName] then
+            return false
+        end
+
+        local itemList = {}
+        for _, item in ipairs(savedVariables.snapshot.tradingHouseList[guildName].itemList) do
+            if item.itemId == itemId then
+                table.insert(itemList, item)
+            end
+        end
+
+        -- Copy the saleList so he cannot change our data
+        return Util.copyTable(itemList)
     end,
 
     ---
