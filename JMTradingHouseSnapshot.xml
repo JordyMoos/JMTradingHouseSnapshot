@@ -19,11 +19,18 @@
                         JMTradingHouseSnapshot.createSnapshot()
                     </OnClicked>
                 </Button>
+                <Button name="$(parent)QuickScanButton" inherits="ZO_DefaultButton" text="Quick Scan">
+                    <Dimensions x="120" y="30" />
+                    <Anchor point="BOTTOMLEFT" offsetX="135" offsetY="-55" />
+                    <OnClicked>
+                        JMTradingHouseSnapshot.createQuickSnapshot()
+                    </OnClicked>
+                </Button>
 
                 <!-- Abort button -->
                 <Button name="$(parent)AbortButton" inherits="ZO_DefaultButton" text="Abort">
                     <Dimensions x="120" y="30" />
-                    <Anchor point="BOTTOMLEFT" offsetX="135" offsetY="-55" />
+                    <Anchor point="BOTTOMLEFT" offsetX="265" offsetY="-55" />
                     <OnClicked>
                         JMTradingHouseSnapshot.abort()
                     </OnClicked>

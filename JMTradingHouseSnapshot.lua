@@ -61,6 +61,12 @@ local Scanner = {
     isScanning = false,
     currentGuild = 0,
     currentPage = 0,
+
+    -- Scanning direction etc
+    -- These values are indicational, they will be overwritten
+    orderOn = TRADING_HOUSE_SORT_SALE_PRICE,
+    orderAsc = true,
+    minimumTimeLeft = nil,
 }
 
 ---
@@ -147,7 +153,7 @@ end
 
 ---
 --
-function Scanner:startScanning()
+function Scanner:startScanning(orderOn, orderAsc, minimumTimeLeft)
     if self.isScanning then
         d('Already scanning')
         EventManager:FireCallbacks(Events.SCAN_ALREADY_RUNNING)
@@ -155,6 +161,11 @@ function Scanner:startScanning()
     end
 
     Gui.leftLabel:SetText('Starting..')
+
+    -- Set scanning configuration
+    self.orderOn = orderOn
+    self.orderAsc = orderAsc
+    self.minimumTimeLeft = minimumTimeLeft
 
     self.isScanning = true
     self.currentGuild = 0
@@ -257,7 +268,7 @@ function Scanner:scanPage(guildId, pageNumber)
             return
         end
 
-        ExecuteTradingHouseSearch(pageNumber, TRADING_HOUSE_SORT_SALE_PRICE, true)
+        ExecuteTradingHouseSearch(pageNumber, self.orderOn, self.orderAsc)
     end, self:getWaitTime())
 end
 
@@ -281,6 +292,7 @@ function Scanner:searchResultReceived(guildId, itemCount, pageNumber, hasMorePag
     end
 
     Gui.leftLabel:SetText('Scanning guild ' .. guildId .. ' page ' .. pageNumber)
+    local lastTimeRemaining
 
     for index = 1, itemCount do
         -- Get item from the current row
@@ -303,9 +315,12 @@ function Scanner:searchResultReceived(guildId, itemCount, pageNumber, hasMorePag
                 expiry = timeRemaining + GetTimeStamp(),
             }
         )
+
+        -- Cache the time remaining to determine if we should continue the scan
+        lastTimeRemaining = timeRemaining
     end
 
-    if hasMorePages then
+    if hasMorePages and lastTimeRemaining and lastTimeRemaining > self.minimumTimeLeft then
         self:scanPage(guildId, pageNumber + 1)
     else
         self:finishedGuild(guildId)
@@ -469,7 +484,14 @@ JMTradingHouseSnapshot = {
     -- Public create snapshot function
     --
     createSnapshot = function()
-        Scanner:startScanning()
+        Scanner:startScanning(TRADING_HOUSE_SORT_SALE_PRICE, true, nil)
+    end,
+
+    ---
+    -- Public create a quick snapshot function
+    --
+    createQuickSnapshot = function()
+        Scanner:startScanning(TRADING_HOUSE_SORT_EXPIRY_TIME, false, (60 * 60 * 24 * 25))
     end,
 
     ---
