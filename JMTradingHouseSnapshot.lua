@@ -88,6 +88,7 @@ local savedVariables = {
 ---
 -- @field mainWindow
 -- @field scanButton
+-- @field quickScanButton
 -- @field abortButton
 -- @field leftLabel
 -- @field rightLabel
@@ -95,6 +96,7 @@ local savedVariables = {
 local Gui = {
     mainWindow = JMTradingHouseSnapshotGuiMainWindow,
     scanButton = JMTradingHouseSnapshotGuiMainWindowScanButton,
+    quickScanButton = JMTradingHouseSnapshotGuiMainWindowQuickScanButton,
     abortButton = JMTradingHouseSnapshotGuiMainWindowAbortButton,
     leftLabel = JMTradingHouseSnapshotGuiMainWindowStatusAction,
     rightLabel = JMTradingHouseSnapshotGuiMainWindowStatusDetail,
@@ -172,6 +174,7 @@ function Scanner:startScanning(orderOn, orderAsc, minimumTimeLeft)
     self.currentPage = 0
 
     Gui.scanButton:SetEnabled(false)
+    Gui.quickScanButton:SetEnabled(false)
     Gui.abortButton:SetEnabled(true)
 
     self.prepareSnapshotData()
@@ -196,6 +199,7 @@ function Scanner:abort()
 
     -- Disable/enable the buttons
     Gui.scanButton:SetEnabled(true)
+    Gui.quickScanButton:SetEnabled(true)
     Gui.abortButton:SetEnabled(false)
 
     EventManager:FireCallbacks(Events.SCAN_FAILED)
@@ -356,6 +360,7 @@ function Scanner:finishedGuild(guildId)
 
     -- Disable/enable the buttons
     Gui.scanButton:SetEnabled(true)
+    Gui.quickScanButton:SetEnabled(true)
     Gui.abortButton:SetEnabled(false)
 
     d('Finished scanning')
