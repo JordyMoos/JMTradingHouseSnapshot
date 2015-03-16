@@ -324,7 +324,7 @@ function Scanner:searchResultReceived(guildId, itemCount, pageNumber, hasMorePag
         lastTimeRemaining = timeRemaining
     end
 
-    if hasMorePages and lastTimeRemaining and lastTimeRemaining > self.minimumTimeLeft then
+    if hasMorePages and lastTimeRemaining and self.minimumTimeLeft and lastTimeRemaining > self.minimumTimeLeft then
         self:scanPage(guildId, pageNumber + 1)
     else
         self:finishedGuild(guildId)
