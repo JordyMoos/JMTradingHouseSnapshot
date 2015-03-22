@@ -324,11 +324,20 @@ function Scanner:searchResultReceived(guildId, itemCount, pageNumber, hasMorePag
         lastTimeRemaining = timeRemaining
     end
 
-    if hasMorePages and lastTimeRemaining and self.minimumTimeLeft and lastTimeRemaining > self.minimumTimeLeft then
-        self:scanPage(guildId, pageNumber + 1)
-    else
-        self:finishedGuild(guildId)
+    if hasMorePages then
+        -- If we do not care about the sale time then keep scanning
+        if not self.minimumTimeLeft then
+            return self:scanPage(guildId, pageNumber + 1)
+        end
+
+        -- If want to scan more days
+        if lastTimeRemaining and lastTimeRemaining > self.minimumTimeLeft then
+            return self:scanPage(guildId, pageNumber + 1)
+        end
     end
+
+    -- If nothing wanted to scan more then we stop for this guild
+    return self:finishedGuild(guildId)
 end
 
 ---
