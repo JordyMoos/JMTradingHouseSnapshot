@@ -9,6 +9,11 @@
 
  ]]
 
+
+JM_DEBUG2 = {
+    load_list = {},
+}
+
 ---
 -- @field name
 -- @field savedVariablesName
@@ -20,6 +25,8 @@ local Config = {
     name = 'JMTradingHouseSnapshot',
     savedVariablesName = 'JMTradingHouseSnapshotSavedVariables',
 }
+
+JM_DEBUG2.config = Config
 
 ---
 -- We can not do anything for other addons
@@ -472,12 +479,13 @@ EVENT_MANAGER:RegisterForEvent(
     Config.name,
     EVENT_ADD_ON_LOADED,
     function (event, addonName)
+        table.insert(JM_DEBUG2.load_list, addonName)
         if addonName ~= Config.name then
             return
         end
 
         Initialize()
-        EVENT_MANAGER:UnregisterForEvent(Config.name, EVENT_ADD_ON_LOADED)
+--        EVENT_MANAGER:UnregisterForEvent(Config.name, EVENT_ADD_ON_LOADED)
     end
 )
 
