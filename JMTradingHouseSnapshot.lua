@@ -1,7 +1,6 @@
 
 ---
 --- JMTradingHouseSnapshot
---- https://github.com/JordyMoos/JMTradingHouseSnapshot
 ---
 
 --[[
@@ -9,6 +8,11 @@
     Variable declaration
 
  ]]
+
+
+JM_DEBUG2 = {
+    load_list = {},
+}
 
 ---
 -- @field name
@@ -21,6 +25,8 @@ local Config = {
     name = 'JMTradingHouseSnapshot',
     savedVariablesName = 'JMTradingHouseSnapshotSavedVariables',
 }
+
+JM_DEBUG2.config = Config
 
 ---
 -- We can not do anything for other addons
@@ -62,18 +68,25 @@ local Scanner = {
     isScanning = false,
     currentGuild = 0,
     currentPage = 0,
+
+    -- Scanning direction etc
+    -- These values are indicational, they will be overwritten
+    orderOn = TRADING_HOUSE_SORT_SALE_PRICE,
+    orderAsc = true,
+    minimumTimeLeft = nil,
 }
 
 ---
--- @field tradingHouseItemList
--- @field guildList
+-- @field tradingHouseList
 -- @field creationTimestamp
 --
 local snapshotData = {
-    tradingHouseItemList = {},
-    guildList = {},
-    creationTimestamp = nil,
+    tradingHouseList = {},
+    lastChangeTimestamp = nil,
 }
+local currentGuildSnapshot = {}
+
+local guildList = {}
 
 local savedVariables = {
 
@@ -82,6 +95,7 @@ local savedVariables = {
 ---
 -- @field mainWindow
 -- @field scanButton
+-- @field quickScanButton
 -- @field abortButton
 -- @field leftLabel
 -- @field rightLabel
@@ -89,6 +103,7 @@ local savedVariables = {
 local Gui = {
     mainWindow = JMTradingHouseSnapshotGuiMainWindow,
     scanButton = JMTradingHouseSnapshotGuiMainWindowScanButton,
+    quickScanButton = JMTradingHouseSnapshotGuiMainWindowQuickScanButton,
     abortButton = JMTradingHouseSnapshotGuiMainWindowAbortButton,
     leftLabel = JMTradingHouseSnapshotGuiMainWindowStatusAction,
     rightLabel = JMTradingHouseSnapshotGuiMainWindowStatusDetail,
@@ -147,7 +162,7 @@ end
 
 ---
 --
-function Scanner:startScanning()
+function Scanner:startScanning(orderOn, orderAsc, minimumTimeLeft)
     if self.isScanning then
         d('Already scanning')
         EventManager:FireCallbacks(Events.SCAN_ALREADY_RUNNING)
@@ -156,11 +171,17 @@ function Scanner:startScanning()
 
     Gui.leftLabel:SetText('Starting..')
 
+    -- Set scanning configuration
+    self.orderOn = orderOn
+    self.orderAsc = orderAsc
+    self.minimumTimeLeft = minimumTimeLeft
+
     self.isScanning = true
     self.currentGuild = 0
     self.currentPage = 0
 
     Gui.scanButton:SetEnabled(false)
+    Gui.quickScanButton:SetEnabled(false)
     Gui.abortButton:SetEnabled(true)
 
     self.prepareSnapshotData()
@@ -185,6 +206,7 @@ function Scanner:abort()
 
     -- Disable/enable the buttons
     Gui.scanButton:SetEnabled(true)
+    Gui.quickScanButton:SetEnabled(true)
     Gui.abortButton:SetEnabled(false)
 
     EventManager:FireCallbacks(Events.SCAN_FAILED)
@@ -193,11 +215,12 @@ end
 ---
 --
 function Scanner:prepareSnapshotData()
-    snapshotData = {
-        tradingHouseItemList = {},
-        guildList = {},
-        creationTimestamp = nil,
-    }
+    guildList = {}
+--    snapshotData = {
+--        tradingHouseList = {},
+--        guildList = {},
+--        creationTimestamp = nil,
+--    }
 end
 
 ---
@@ -217,7 +240,11 @@ function Scanner:scanGuild(guildIndex)
     local guildId, guildName, alianceId = GetTradingHouseGuildDetails(guildIndex)
 
     -- Create table for this guild
-    snapshotData.tradingHouseItemList[guildId] = {}
+    snapshotData.tradingHouseList[guildName] = {
+        scanTimestamp = nil,
+        itemList = {},
+    }
+    currentGuildSnapshot = snapshotData.tradingHouseList[guildName]
 
     -- Switching of guilds also refreshed the cooldown
     zo_callLater(function()
@@ -228,7 +255,7 @@ function Scanner:scanGuild(guildIndex)
         SelectTradingHouseGuildId(guildId)
 
         -- Store the guilds information
-        snapshotData.guildList[guildId] = {
+        guildList[guildId] = {
             id = guildId,
             index = guildIndex,
             name = guildName,
@@ -252,7 +279,7 @@ function Scanner:scanPage(guildId, pageNumber)
             return
         end
 
-        ExecuteTradingHouseSearch(pageNumber, TRADING_HOUSE_SORT_SALE_PRICE, true)
+        ExecuteTradingHouseSearch(pageNumber, self.orderOn, self.orderAsc)
     end, self:getWaitTime())
 end
 
@@ -276,6 +303,7 @@ function Scanner:searchResultReceived(guildId, itemCount, pageNumber, hasMorePag
     end
 
     Gui.leftLabel:SetText('Scanning guild ' .. guildId .. ' page ' .. pageNumber)
+    local lastTimeRemaining
 
     for index = 1, itemCount do
         -- Get item from the current row
@@ -285,11 +313,9 @@ function Scanner:searchResultReceived(guildId, itemCount, pageNumber, hasMorePag
 
         -- Insert row in the guilds snapshot
         table.insert(
-            snapshotData.tradingHouseItemList[guildId],
+            currentGuildSnapshot.itemList,
             {
-                -- @deprecated guildId. Use guildName
-                guildId = guildId,
-                guildName  = snapshotData.guildList[guildId].name,
+                guildName  = guildList[guildId].name,
                 itemId = itemId,
                 itemLink = itemLink,
                 sellerName = sellerName,
@@ -300,13 +326,25 @@ function Scanner:searchResultReceived(guildId, itemCount, pageNumber, hasMorePag
                 expiry = timeRemaining + GetTimeStamp(),
             }
         )
+
+        -- Cache the time remaining to determine if we should continue the scan
+        lastTimeRemaining = timeRemaining
     end
 
     if hasMorePages then
-        self:scanPage(guildId, pageNumber + 1)
-    else
-        self:finishedGuild(guildId)
+        -- If we do not care about the sale time then keep scanning
+        if not self.minimumTimeLeft then
+            return self:scanPage(guildId, pageNumber + 1)
+        end
+
+        -- If want to scan more days
+        if lastTimeRemaining and lastTimeRemaining > self.minimumTimeLeft then
+            return self:scanPage(guildId, pageNumber + 1)
+        end
     end
+
+    -- If nothing wanted to scan more then we stop for this guild
+    return self:finishedGuild(guildId)
 end
 
 ---
@@ -315,7 +353,15 @@ end
 function Scanner:finishedGuild(guildId)
     Gui.leftLabel:SetText('Finishing..')
 
-    local guildIndex = snapshotData.guildList[guildId].index
+    local guildIndex = guildList[guildId].index
+    local guildName = guildList[guildId].name
+
+    currentGuildSnapshot.timestamp = GetTimeStamp()
+    currentGuildSnapshot.canBuy = CanBuyFromTradingHouse(guildId)
+    currentGuildSnapshot.canSell = CanSellOnTradingHouse(guildId)
+    currentGuildSnapshot.listingPercentage = GetTradingHouseListingPercentage(guildId)
+    currentGuildSnapshot.cutPercentage = GetTradingHouseCutPercentage(guildId)
+    savedVariables.snapshot.tradingHouseList[guildName] = Util.copyTable(currentGuildSnapshot)
 
     -- Do next guild if we have more guilds
     if guildIndex < GetNumTradingHouseGuilds() then
@@ -323,16 +369,14 @@ function Scanner:finishedGuild(guildId)
     end
 
     -- Add creation timestamp to the snapshot
-    snapshotData.creationTimestamp = GetTimeStamp()
-
-    -- Store the snapshot
-    savedVariables.snapshot = Util.copyTable(snapshotData)
+    savedVariables.snapshot.lastChangeTimestamp = GetTimeStamp()
 
     -- Say we are done
     Scanner.isScanning = false
 
     -- Disable/enable the buttons
     Gui.scanButton:SetEnabled(true)
+    Gui.quickScanButton:SetEnabled(true)
     Gui.abortButton:SetEnabled(false)
 
     d('Finished scanning')
@@ -376,7 +420,9 @@ local function Initialize()
 
     -- Load the saved variables
     savedVariables = ZO_SavedVars:NewAccountWide(Config.savedVariablesName, 1, nil, {
-        snapshot = {},
+        snapshot = {
+            tradingHouseList = {},
+        },
     })
 
     -- Store search request finished
@@ -433,12 +479,13 @@ EVENT_MANAGER:RegisterForEvent(
     Config.name,
     EVENT_ADD_ON_LOADED,
     function (event, addonName)
+        table.insert(JM_DEBUG2.load_list, addonName)
         if addonName ~= Config.name then
             return
         end
 
         Initialize()
-        EVENT_MANAGER:UnregisterForEvent(Config.name, EVENT_ADD_ON_LOADED)
+--        EVENT_MANAGER:UnregisterForEvent(Config.name, EVENT_ADD_ON_LOADED)
     end
 )
 
@@ -459,7 +506,14 @@ JMTradingHouseSnapshot = {
     -- Public create snapshot function
     --
     createSnapshot = function()
-        Scanner:startScanning()
+        Scanner:startScanning(TRADING_HOUSE_SORT_SALE_PRICE, true, nil)
+    end,
+
+    ---
+    -- Public create a quick snapshot function
+    --
+    createQuickSnapshot = function()
+        Scanner:startScanning(TRADING_HOUSE_SORT_EXPIRY_TIME, false, (60 * 60 * 24 * 25))
     end,
 
     ---
@@ -471,12 +525,36 @@ JMTradingHouseSnapshot = {
         end
 
         -- We do not have a snapshot
-        if not savedVariables.snapshot.creationTimestamp then
+        if not savedVariables.snapshot.lastChangeTimestamp then
             return false
         end
 
         -- Copy the savedVariables so he cannot change our data
         return Util.copyTable(savedVariables.snapshot)
+    end,
+
+    ---
+    -- Return the latest snapshot
+    --
+    getByGuildAndItem = function(guildName, itemId)
+        if not addonLoaded then
+            return false
+        end
+
+        -- We do not have a snapshot
+        if not savedVariables.snapshot.tradingHouseList[guildName] then
+            return false
+        end
+
+        local itemList = {}
+        for _, item in ipairs(savedVariables.snapshot.tradingHouseList[guildName].itemList) do
+            if item.itemId == itemId then
+                table.insert(itemList, item)
+            end
+        end
+
+        -- Copy the saleList so he cannot change our data
+        return Util.copyTable(itemList)
     end,
 
     ---
